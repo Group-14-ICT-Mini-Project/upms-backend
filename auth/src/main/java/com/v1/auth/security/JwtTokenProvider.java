@@ -57,7 +57,7 @@ public class JwtTokenProvider {
     }
 
     public Long getUserIdFromJWT(String token) {
-        return Jwts.parserBuilder()
+        return Jwts.parser()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
@@ -66,7 +66,7 @@ public class JwtTokenProvider {
     }
 
     public String getUsernameFromJWT(String token) {
-        return Jwts.parserBuilder()
+        return Jwts.parser()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
@@ -76,7 +76,7 @@ public class JwtTokenProvider {
 
     @SuppressWarnings("unchecked")
     public Set<String> getRolesFromJWT(String token) {
-        return (Set<String>) Jwts.parserBuilder()
+        return (Set<String>) Jwts.parser()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
@@ -86,7 +86,7 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
+            Jwts.parser()
                     .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token);
@@ -98,7 +98,7 @@ public class JwtTokenProvider {
     }
 
     public long getExpirationTimeFromToken(String token) {
-        return Jwts.parserBuilder()
+        return Jwts.parser()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
