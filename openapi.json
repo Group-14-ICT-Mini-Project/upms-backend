@@ -1,0 +1,1074 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "UPMS Backend API",
+    "description": "University Procurement Management System - Comprehensive Microservices API",
+    "version": "1.0.0",
+    "contact": {
+      "name": "UPMS Development Team",
+      "email": "support@upms.local"
+    },
+    "license": {
+      "name": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8081",
+      "description": "Auth Service"
+    },
+    {
+      "url": "http://localhost:8082",
+      "description": "Procurement Service"
+    },
+    {
+      "url": "http://localhost:8083",
+      "description": "Bidding Service"
+    },
+    {
+      "url": "http://localhost:8084",
+      "description": "Evaluation Service"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT Bearer token for authentication"
+      }
+    },
+    "schemas": {
+      "LoginRequest": {
+        "type": "object",
+        "required": ["username", "password"],
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "user@upms.local"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "password123"
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "refreshToken": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "tokenType": {
+            "type": "string",
+            "example": "Bearer"
+          },
+          "expiresIn": {
+            "type": "integer",
+            "example": 3600
+          }
+        }
+      },
+      "CreateProcurementRequest": {
+        "type": "object",
+        "required": ["title", "estimatedValue", "procurementMethodId", "procurementCategoryId", "openingDate", "closingDate", "documentFee", "requiresBidBond"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Purchase of Office Supplies"
+          },
+          "description": {
+            "type": "string",
+            "example": "Procurement for office supplies and stationery"
+          },
+          "estimatedValue": {
+            "type": "number",
+            "format": "double",
+            "example": 500000.00
+          },
+          "procurementMethodId": {
+            "type": "integer",
+            "example": 1
+          },
+          "procurementCategoryId": {
+            "type": "integer",
+            "example": 1
+          },
+          "openingDate": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-02-20T10:00:00"
+          },
+          "closingDate": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-02-25T10:00:00"
+          },
+          "documentFee": {
+            "type": "number",
+            "format": "double",
+            "example": 8000.00
+          },
+          "requiresBidBond": {
+            "type": "boolean",
+            "example": true
+          },
+          "bidBondPercentage": {
+            "type": "number",
+            "format": "double",
+            "example": 5.0
+          }
+        }
+      },
+      "ProcurementResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "referenceNumber": {
+            "type": "string",
+            "example": "PROC-2024-001"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "estimatedValue": {
+            "type": "number"
+          },
+          "procurementMethodName": {
+            "type": "string",
+            "example": "NCB"
+          },
+          "categoryName": {
+            "type": "string",
+            "example": "Goods"
+          },
+          "status": {
+            "type": "string",
+            "example": "DRAFT"
+          },
+          "approvalLevel": {
+            "type": "string"
+          },
+          "openingDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "closingDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "documentFee": {
+            "type": "number"
+          },
+          "requiresBidBond": {
+            "type": "boolean"
+          },
+          "bidBondPercentage": {
+            "type": "number"
+          },
+          "createdByUserId": {
+            "type": "integer"
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "publishedDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SubmitBidRequest": {
+        "type": "object",
+        "required": ["procurementId", "financialBid", "bidBond", "documentFeeReference", "vatSsclDeclaration"],
+        "properties": {
+          "procurementId": {
+            "type": "integer",
+            "example": 1
+          },
+          "financialBid": {
+            "type": "number",
+            "format": "double",
+            "example": 450000.00
+          },
+          "deliverySchedule": {
+            "type": "string",
+            "example": "15 days from PO"
+          },
+          "warrantyPeriod": {
+            "type": "string",
+            "example": "1 year"
+          },
+          "paymentTerms": {
+            "type": "string",
+            "example": "Net 30"
+          },
+          "bidBond": {
+            "type": "object",
+            "required": ["bondReference", "issuerBank", "bondAmount", "issuedDate", "expiryDate"],
+            "properties": {
+              "bondReference": {
+                "type": "string",
+                "example": "BD-2024-001"
+              },
+              "issuerBank": {
+                "type": "string",
+                "example": "Commercial Bank of Ceylon"
+              },
+              "bondAmount": {
+                "type": "number",
+                "format": "double",
+                "example": 50000.00
+              },
+              "issuedDate": {
+                "type": "string",
+                "format": "date",
+                "example": "2024-02-01"
+              },
+              "expiryDate": {
+                "type": "string",
+                "format": "date",
+                "example": "2024-08-01"
+              }
+            }
+          },
+          "documentFeeReference": {
+            "type": "string",
+            "example": "PAY-2024-001"
+          },
+          "vatSsclDeclaration": {
+            "type": "object",
+            "required": ["registrationNumber", "registrationType", "isDeclared"],
+            "properties": {
+              "registrationNumber": {
+                "type": "string",
+                "example": "123456789"
+              },
+              "registrationType": {
+                "type": "string",
+                "example": "VAT"
+              },
+              "isDeclared": {
+                "type": "boolean",
+                "example": true
+              }
+            }
+          }
+        }
+      },
+      "BidResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "procurementId": {
+            "type": "integer"
+          },
+          "bidderId": {
+            "type": "integer"
+          },
+          "bidReference": {
+            "type": "string",
+            "example": "BID-2024-001"
+          },
+          "submittedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "financialBid": {
+            "type": "number"
+          },
+          "deliverySchedule": {
+            "type": "string"
+          },
+          "warrantyPeriod": {
+            "type": "string"
+          },
+          "paymentTerms": {
+            "type": "string"
+          },
+          "bidStatus": {
+            "type": "string",
+            "example": "SUBMITTED"
+          },
+          "isCompliant": {
+            "type": "boolean"
+          },
+          "complianceNotes": {
+            "type": "string"
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User login",
+        "description": "Authenticate user and receive JWT tokens",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/auth/refresh-token": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Refresh access token",
+        "description": "Use refresh token to get new access token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshToken": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "New access token generated"
+          },
+          "401": {
+            "description": "Invalid refresh token"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/verify": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Verify JWT token",
+        "description": "Verify if JWT token is valid",
+        "responses": {
+          "200": {
+            "description": "Token is valid"
+          },
+          "401": {
+            "description": "Invalid or expired token"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User logout",
+        "description": "Revoke refresh token and logout",
+        "responses": {
+          "200": {
+            "description": "Logout successful"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Auth service health check",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Service is running"
+          }
+        }
+      }
+    },
+    "/api/v1/procurement/create": {
+      "post": {
+        "tags": ["Procurement"],
+        "summary": "Create new procurement",
+        "description": "Create a new procurement/RFQ with auto method selection",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProcurementRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Procurement created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcurementResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/api/v1/procurement/{id}": {
+      "get": {
+        "tags": ["Procurement"],
+        "summary": "Get procurement details",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Procurement details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcurementResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Procurement not found"
+          }
+        }
+      }
+    },
+    "/api/v1/procurement/list": {
+      "get": {
+        "tags": ["Procurement"],
+        "summary": "List all procurements",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of procurements"
+          }
+        }
+      }
+    },
+    "/api/v1/procurement/status/{status}": {
+      "get": {
+        "tags": ["Procurement"],
+        "summary": "Get procurements by status",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["DRAFT", "PUBLISHED", "OPEN", "CLOSING_SOON", "CLOSED", "UNDER_EVALUATION", "EVALUATED", "SUPPLIER_SELECTED", "PURCHASE_ORDER_ISSUED", "COMPLETED", "CANCELLED", "SUSPENDED"]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Filtered procurements"
+          }
+        }
+      }
+    },
+    "/api/v1/procurement/{id}/update": {
+      "put": {
+        "tags": ["Procurement"],
+        "summary": "Update procurement",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "estimatedValue": {
+                    "type": "number"
+                  },
+                  "openingDate": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "closingDate": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "documentFee": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Procurement updated"
+          }
+        }
+      }
+    },
+    "/api/v1/procurement/{id}/publish": {
+      "post": {
+        "tags": ["Procurement"],
+        "summary": "Publish procurement",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "publish": {
+                    "type": "boolean"
+                  },
+                  "rfqRecipientEmails": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "postOnPromiseLk": {
+                    "type": "boolean"
+                  },
+                  "publishInNewspaper": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Procurement published"
+          }
+        }
+      }
+    },
+    "/api/v1/procurement/{id}/rfq-recipients": {
+      "post": {
+        "tags": ["Procurement"],
+        "summary": "Add RFQ recipient",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "supplierEmail": {
+                    "type": "string"
+                  },
+                  "supplierName": {
+                    "type": "string"
+                  },
+                  "supplierId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "RFQ recipient added"
+          }
+        }
+      },
+      "get": {
+        "tags": ["Procurement"],
+        "summary": "Get RFQ recipients",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RFQ recipients list"
+          }
+        }
+      }
+    },
+    "/api/v1/procurement/{id}/delete": {
+      "delete": {
+        "tags": ["Procurement"],
+        "summary": "Delete procurement",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Procurement deleted"
+          }
+        }
+      }
+    },
+    "/api/v1/procurement/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Procurement service health check",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Service is running"
+          }
+        }
+      }
+    },
+    "/api/v1/bidding/{procurementId}/submit-bid": {
+      "post": {
+        "tags": ["Bidding"],
+        "summary": "Submit new bid",
+        "description": "Submit bid with mandatory requirements: bid bond (120-day), VAT/SSCL, document fee",
+        "parameters": [
+          {
+            "name": "procurementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitBidRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Bid submitted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BidResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          }
+        }
+      }
+    },
+    "/api/v1/bidding/{bidId}": {
+      "get": {
+        "tags": ["Bidding"],
+        "summary": "Get bid details",
+        "parameters": [
+          {
+            "name": "bidId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bid details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BidResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bid not found"
+          }
+        }
+      }
+    },
+    "/api/v1/bidding/procurement/{procurementId}/bids": {
+      "get": {
+        "tags": ["Bidding"],
+        "summary": "List bids for procurement",
+        "parameters": [
+          {
+            "name": "procurementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of bids"
+          }
+        }
+      }
+    },
+    "/api/v1/bidding/bidder/{bidderId}/my-bids": {
+      "get": {
+        "tags": ["Bidding"],
+        "summary": "Get my bids",
+        "parameters": [
+          {
+            "name": "bidderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "My bids"
+          }
+        }
+      }
+    },
+    "/api/v1/bidding/procurement/{procurementId}/compliant-bids": {
+      "get": {
+        "tags": ["Bidding"],
+        "summary": "Get compliant bids",
+        "parameters": [
+          {
+            "name": "procurementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of compliant bids"
+          }
+        }
+      }
+    },
+    "/api/v1/bidding/{bidId}/reject": {
+      "post": {
+        "tags": ["Bidding"],
+        "summary": "Reject bid",
+        "parameters": [
+          {
+            "name": "bidId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string"
+                  },
+                  "category": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bid rejected"
+          }
+        }
+      }
+    },
+    "/api/v1/bidding/{bidId}/amendments": {
+      "post": {
+        "tags": ["Bidding"],
+        "summary": "Submit bid amendment",
+        "parameters": [
+          {
+            "name": "bidId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Amendment submitted"
+          }
+        }
+      }
+    },
+    "/api/v1/bidding/{bidId}/bond": {
+      "get": {
+        "tags": ["Bidding"],
+        "summary": "Get bid bond details",
+        "parameters": [
+          {
+            "name": "bidId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bid bond details"
+          }
+        }
+      }
+    },
+    "/api/v1/bidding/{bidId}/vat-sscl": {
+      "get": {
+        "tags": ["Bidding"],
+        "summary": "Get VAT/SSCL declaration",
+        "parameters": [
+          {
+            "name": "bidId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "VAT/SSCL declaration"
+          }
+        }
+      }
+    },
+    "/api/v1/bidding/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Bidding service health check",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Service is running"
+          }
+        }
+      }
+    },
+    "/api/v1/evaluation/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Evaluation service health check",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Service is running"
+          }
+        }
+      }
+    }
+  }
+}

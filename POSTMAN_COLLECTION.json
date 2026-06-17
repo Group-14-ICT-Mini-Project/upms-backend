@@ -1,0 +1,646 @@
+{
+  "info": {
+    "_postman_id": "upms-backend",
+    "name": "UPMS Backend API",
+    "description": "University Procurement Management System - Complete API Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"test@upms.local\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/v1/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "v1", "auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/v1/auth/refresh-token",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "v1", "auth", "refresh-token"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/v1/auth/verify",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "v1", "auth", "verify"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/v1/auth/logout",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "v1", "auth", "logout"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Auth Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8081/api/v1/auth/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "v1", "auth", "health"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Procurement",
+      "item": [
+        {
+          "name": "Create Procurement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Purchase of Office Supplies\",\n  \"description\": \"Procurement for office supplies and stationery\",\n  \"estimatedValue\": 500000.00,\n  \"procurementMethodId\": 1,\n  \"procurementCategoryId\": 1,\n  \"openingDate\": \"2024-02-20T10:00:00\",\n  \"closingDate\": \"2024-02-25T10:00:00\",\n  \"documentFee\": 8000.00,\n  \"requiresBidBond\": true,\n  \"bidBondPercentage\": 5.0\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8082/api/v1/procurement/create",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8082",
+              "path": ["api", "v1", "procurement", "create"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Procurement",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8082/api/v1/procurement/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8082",
+              "path": ["api", "v1", "procurement", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List All Procurements",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8082/api/v1/procurement/list?page=0&size=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8082",
+              "path": ["api", "v1", "procurement", "list"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get by Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8082/api/v1/procurement/status/DRAFT?page=0&size=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8082",
+              "path": ["api", "v1", "procurement", "status", "DRAFT"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Procurement",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Title\",\n  \"description\": \"Updated description\",\n  \"estimatedValue\": 550000.00,\n  \"documentFee\": 12000.00\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8082/api/v1/procurement/1/update",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8082",
+              "path": ["api", "v1", "procurement", "1", "update"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Publish Procurement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"publish\": true,\n  \"rfqRecipientEmails\": [\"supplier1@company.com\", \"supplier2@company.com\"],\n  \"postOnPromiseLk\": true,\n  \"publishInNewspaper\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8082/api/v1/procurement/1/publish",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8082",
+              "path": ["api", "v1", "procurement", "1", "publish"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add RFQ Recipient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"supplierEmail\": \"supplier@company.com\",\n  \"supplierName\": \"ABC Supplies Ltd\",\n  \"supplierId\": \"SUP-001\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8082/api/v1/procurement/1/rfq-recipients",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8082",
+              "path": ["api", "v1", "procurement", "1", "rfq-recipients"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get RFQ Recipients",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8082/api/v1/procurement/1/rfq-recipients",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8082",
+              "path": ["api", "v1", "procurement", "1", "rfq-recipients"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Procurement",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8082/api/v1/procurement/1/delete",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8082",
+              "path": ["api", "v1", "procurement", "1", "delete"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Procurement Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8082/api/v1/procurement/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8082",
+              "path": ["api", "v1", "procurement", "health"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Bidding",
+      "item": [
+        {
+          "name": "Submit Bid",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"procurementId\": 1,\n  \"financialBid\": 450000.00,\n  \"deliverySchedule\": \"15 days from PO\",\n  \"warrantyPeriod\": \"1 year\",\n  \"paymentTerms\": \"Net 30\",\n  \"bidBond\": {\n    \"bondReference\": \"BD-2024-001\",\n    \"issuerBank\": \"Commercial Bank of Ceylon\",\n    \"bondAmount\": 50000.00,\n    \"issuedDate\": \"2024-02-01\",\n    \"expiryDate\": \"2024-08-01\"\n  },\n  \"documentFeeReference\": \"PAY-2024-001\",\n  \"vatSsclDeclaration\": {\n    \"registrationNumber\": \"123456789\",\n    \"registrationType\": \"VAT\",\n    \"isDeclared\": true\n  }\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8083/api/v1/bidding/1/submit-bid",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8083",
+              "path": ["api", "v1", "bidding", "1", "submit-bid"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Bid Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8083/api/v1/bidding/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8083",
+              "path": ["api", "v1", "bidding", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Bids for Procurement",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8083/api/v1/bidding/procurement/1/bids?page=0&size=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8083",
+              "path": ["api", "v1", "bidding", "procurement", "1", "bids"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Bids",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8083/api/v1/bidding/bidder/1/my-bids?page=0&size=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8083",
+              "path": ["api", "v1", "bidding", "bidder", "1", "my-bids"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Compliant Bids",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8083/api/v1/bidding/procurement/1/compliant-bids",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8083",
+              "path": ["api", "v1", "bidding", "procurement", "1", "compliant-bids"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reject Bid",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Bid bond validity less than 120 days\",\n  \"category\": \"COMPLIANCE\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8083/api/v1/bidding/1/reject",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8083",
+              "path": ["api", "v1", "bidding", "1", "reject"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Submit Bid Amendment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"PRICE_REVISION\",\n  \"description\": \"Revised quote based on market rates\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8083/api/v1/bidding/1/amendments",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8083",
+              "path": ["api", "v1", "bidding", "1", "amendments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Bid Bond",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8083/api/v1/bidding/1/bond",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8083",
+              "path": ["api", "v1", "bidding", "1", "bond"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get VAT/SSCL Declaration",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8083/api/v1/bidding/1/vat-sscl",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8083",
+              "path": ["api", "v1", "bidding", "1", "vat-sscl"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Bidding Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8083/api/v1/bidding/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8083",
+              "path": ["api", "v1", "bidding", "health"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Evaluation",
+      "item": [
+        {
+          "name": "Evaluation Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8084/api/v1/evaluation/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8084",
+              "path": ["api", "v1", "evaluation", "health"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
