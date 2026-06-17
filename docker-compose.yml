@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Databases
+  postgres-auth:
+    image: postgres:15-alpine
+    container_name: upms_auth_db
+    environment:
+      POSTGRES_DB: upms_auth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+    networks:
+      - upms-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-procurement:
+    image: postgres:15-alpine
+    container_name: upms_procurement_db
+    environment:
+      POSTGRES_DB: upms_procurement
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_procurement_data:/var/lib/postgresql/data
+    networks:
+      - upms-network
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+
+  postgres-bidding:
+    image: postgres:15-alpine
+    container_name: upms_bidding_db
+    environment:
+      POSTGRES_DB: upms_bidding
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_bidding_data:/var/lib/postgresql/data
+    networks:
+      - upms-network
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+
+  postgres-evaluation:
+    image: postgres:15-alpine
+    container_name: upms_evaluation_db
+    environment:
+      POSTGRES_DB: upms_evaluation
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_evaluation_data:/var/lib/postgresql/data
+    networks:
+      - upms-network
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+
+  # pgAdmin for Database Management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: upms_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@upms.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    networks:
+      - upms-network
+    depends_on:
+      - postgres-auth
+      - postgres-procurement
+      - postgres-bidding
+      - postgres-evaluation
+
+  # API Gateway (Optional - can be Kong, Traefik, or Spring Cloud Gateway)
+  # Commented out for now - uncomment when implementing API Gateway
+  # api-gateway:
+  #   image: nginx:alpine
+  #   container_name: upms_api_gateway
+  #   ports:
+  #     - "8080:80"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #   networks:
+  #     - upms-network
+  #   depends_on:
+  #     - auth-service
+  #     - procurement-service
+  #     - bidding-service
+  #     - evaluation-service
+
+volumes:
+  postgres_auth_data:
+  postgres_procurement_data:
+  postgres_bidding_data:
+  postgres_evaluation_data:
+
+networks:
+  upms-network:
+    driver: bridge
