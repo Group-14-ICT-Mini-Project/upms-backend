@@ -41,4 +41,38 @@ public class UpdateProcurementRequest {
 
     @Schema(description = "Bid bond percentage")
     private BigDecimal bidBondPercentage;
+
+    @Schema(description = "Faculty raising the requisition")
+    private String faculty;
+
+    @Schema(description = "Department raising the requisition")
+    private String department;
+
+    @Schema(description = "Requisition type: Consumables or Capital Goods")
+    private String requisitionType;
+
+    @Schema(description = "Current stock balance at time of requisition")
+    private Integer currentStockBalance;
+
+    @Schema(description = "Source of funding for this procurement")
+    private String fundingSource;
+
+    @Schema(description = "Budget code assigned by the Bursar")
+    private String budgetCode;
+
+    @Schema(description = "Supplier name, set after Purchase Order is raised")
+    private String supplierName;
+
+    @Schema(description = "Purchase Order number, set by the Supplies Division (SDC)")
+    private String poNumber;
+
+    @Schema(description = "GRN number, set by the Storekeeper")
+    private String grnNumber;
+
+    @Schema(description = "Invoice number, set by the Finance Division")
+    private String invoiceNumber;
+
+    @DecimalMin(value = "0.0", inclusive = true)
+    @Schema(description = "Invoice amount, set by the Finance Division")
+    private BigDecimal invoiceAmount;
 }

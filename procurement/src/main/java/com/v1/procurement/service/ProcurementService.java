@@ -35,11 +35,11 @@ public class ProcurementService {
     PromiseLkPostRepository promiseLkPostRepository;
 
     public ProcurementService(ProcurementRepository procurementRepository,
-                            ProcurementMethodRepository procurementMethodRepository,
-                            ProcurementCategoryRepository procurementCategoryRepository,
-                            RfqRecipientRepository rfqRecipientRepository,
-                            NewspaperPublicationRepository newspaperPublicationRepository,
-                            PromiseLkPostRepository promiseLkPostRepository) {
+                              ProcurementMethodRepository procurementMethodRepository,
+                              ProcurementCategoryRepository procurementCategoryRepository,
+                              RfqRecipientRepository rfqRecipientRepository,
+                              NewspaperPublicationRepository newspaperPublicationRepository,
+                              PromiseLkPostRepository promiseLkPostRepository) {
         this.procurementRepository = procurementRepository;
         this.procurementMethodRepository = procurementMethodRepository;
         this.procurementCategoryRepository = procurementCategoryRepository;
@@ -119,7 +119,7 @@ public class ProcurementService {
     }
 
     /**
-     * Update procurement details
+     * Update procurement details (only allowed while in DRAFT status)
      */
     public ProcurementResponse updateProcurement(Long procurementId, UpdateProcurementRequest request) {
         log.info("Updating procurement: {}", procurementId);
@@ -139,9 +139,92 @@ public class ProcurementService {
         if (request.getDocumentFee() != null) procurement.setDocumentFee(request.getDocumentFee());
         if (request.getRequiresBidBond() != null) procurement.setRequiresBidBond(request.getRequiresBidBond());
         if (request.getBidBondPercentage() != null) procurement.setBidBondPercentage(request.getBidBondPercentage());
+        if (request.getFaculty() != null) procurement.setFaculty(request.getFaculty());
+        if (request.getDepartment() != null) procurement.setDepartment(request.getDepartment());
+        if (request.getRequisitionType() != null) procurement.setRequisitionType(request.getRequisitionType());
+        if (request.getCurrentStockBalance() != null) procurement.setCurrentStockBalance(request.getCurrentStockBalance());
+        if (request.getFundingSource() != null) procurement.setFundingSource(request.getFundingSource());
+
+        // Downstream workflow fields can also be corrected while still in DRAFT
+        if (request.getBudgetCode() != null) procurement.setBudgetCode(request.getBudgetCode());
+        if (request.getSupplierName() != null) procurement.setSupplierName(request.getSupplierName());
+        if (request.getPoNumber() != null) procurement.setPoNumber(request.getPoNumber());
+        if (request.getGrnNumber() != null) procurement.setGrnNumber(request.getGrnNumber());
+        if (request.getInvoiceNumber() != null) procurement.setInvoiceNumber(request.getInvoiceNumber());
+        if (request.getInvoiceAmount() != null) procurement.setInvoiceAmount(request.getInvoiceAmount());
 
         Procurement updated = procurementRepository.save(procurement);
         log.info("Procurement updated successfully");
+
+        return mapToProcurementResponse(updated);
+    }
+
+    /**
+     * Set the budget code - performed by the Bursar
+     */
+    public ProcurementResponse assignBudgetCode(Long procurementId, String budgetCode) {
+        log.info("Assigning budget code to procurement: {}", procurementId);
+
+        Procurement procurement = procurementRepository.findById(procurementId)
+                .orElseThrow(() -> new RuntimeException("Procurement not found"));
+
+        procurement.setBudgetCode(budgetCode);
+
+        Procurement updated = procurementRepository.save(procurement);
+        log.info("Budget code assigned successfully");
+
+        return mapToProcurementResponse(updated);
+    }
+
+    /**
+     * Record the Purchase Order details - performed by the Supplies Division (SDC)
+     */
+    public ProcurementResponse recordPurchaseOrder(Long procurementId, String poNumber, String supplierName) {
+        log.info("Recording purchase order for procurement: {}", procurementId);
+
+        Procurement procurement = procurementRepository.findById(procurementId)
+                .orElseThrow(() -> new RuntimeException("Procurement not found"));
+
+        procurement.setPoNumber(poNumber);
+        procurement.setSupplierName(supplierName);
+
+        Procurement updated = procurementRepository.save(procurement);
+        log.info("Purchase order recorded successfully");
+
+        return mapToProcurementResponse(updated);
+    }
+
+    /**
+     * Record the GRN (Goods Received Note) number - performed by the Storekeeper
+     */
+    public ProcurementResponse recordGrn(Long procurementId, String grnNumber) {
+        log.info("Recording GRN for procurement: {}", procurementId);
+
+        Procurement procurement = procurementRepository.findById(procurementId)
+                .orElseThrow(() -> new RuntimeException("Procurement not found"));
+
+        procurement.setGrnNumber(grnNumber);
+
+        Procurement updated = procurementRepository.save(procurement);
+        log.info("GRN recorded successfully");
+
+        return mapToProcurementResponse(updated);
+    }
+
+    /**
+     * Record invoice details - performed by the Finance Division
+     */
+    public ProcurementResponse recordInvoice(Long procurementId, String invoiceNumber, BigDecimal invoiceAmount) {
+        log.info("Recording invoice for procurement: {}", procurementId);
+
+        Procurement procurement = procurementRepository.findById(procurementId)
+                .orElseThrow(() -> new RuntimeException("Procurement not found"));
+
+        procurement.setInvoiceNumber(invoiceNumber);
+        procurement.setInvoiceAmount(invoiceAmount);
+
+        Procurement updated = procurementRepository.save(procurement);
+        log.info("Invoice recorded successfully");
 
         return mapToProcurementResponse(updated);
     }
@@ -271,7 +354,7 @@ public class ProcurementService {
     }
 
     /**
-     * Map entity to DTO
+     * Map entity to DTO - includes every field on the Procurement entity
      */
     private ProcurementResponse mapToProcurementResponse(Procurement procurement) {
         return ProcurementResponse.builder()
@@ -294,6 +377,17 @@ public class ProcurementService {
                 .updatedDate(procurement.getUpdatedDate())
                 .isActive(procurement.getIsActive())
                 .publishedDate(procurement.getPublishedDate())
+                .faculty(procurement.getFaculty())
+                .department(procurement.getDepartment())
+                .requisitionType(procurement.getRequisitionType())
+                .currentStockBalance(procurement.getCurrentStockBalance())
+                .fundingSource(procurement.getFundingSource())
+                .budgetCode(procurement.getBudgetCode())
+                .supplierName(procurement.getSupplierName())
+                .poNumber(procurement.getPoNumber())
+                .grnNumber(procurement.getGrnNumber())
+                .invoiceNumber(procurement.getInvoiceNumber())
+                .invoiceAmount(procurement.getInvoiceAmount())
                 .build();
     }
 

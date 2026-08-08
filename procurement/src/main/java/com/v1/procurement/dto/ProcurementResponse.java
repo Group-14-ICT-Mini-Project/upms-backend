@@ -13,13 +13,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(description = "Procurement response with all details")
+@Schema(description = "Procurement response")
 public class ProcurementResponse {
 
     @Schema(description = "Procurement ID")
     private Long id;
 
-    @Schema(description = "Reference number", example = "PROC-2024-001")
+    @Schema(description = "Reference number")
     private String referenceNumber;
 
     @Schema(description = "Procurement title")
@@ -31,10 +31,10 @@ public class ProcurementResponse {
     @Schema(description = "Estimated value")
     private BigDecimal estimatedValue;
 
-    @Schema(description = "Method name")
+    @Schema(description = "Procurement method name")
     private String procurementMethodName;
 
-    @Schema(description = "Category name")
+    @Schema(description = "Procurement category name")
     private String categoryName;
 
     @Schema(description = "Current status")
@@ -43,33 +43,66 @@ public class ProcurementResponse {
     @Schema(description = "Approval level")
     private String approvalLevel;
 
-    @Schema(description = "Bid opening date")
+    @Schema(description = "Opening date")
     private LocalDateTime openingDate;
 
-    @Schema(description = "Bid closing date")
+    @Schema(description = "Closing date")
     private LocalDateTime closingDate;
 
     @Schema(description = "Document fee")
     private BigDecimal documentFee;
 
-    @Schema(description = "Whether bid bond is required")
+    @Schema(description = "Bid bond requirement")
     private Boolean requiresBidBond;
 
     @Schema(description = "Bid bond percentage")
     private BigDecimal bidBondPercentage;
 
-    @Schema(description = "Creator user ID")
+    @Schema(description = "Created by user ID")
     private Long createdByUserId;
 
-    @Schema(description = "Creation date")
+    @Schema(description = "Created date")
     private LocalDateTime createdDate;
 
-    @Schema(description = "Last update date")
+    @Schema(description = "Updated date")
     private LocalDateTime updatedDate;
 
-    @Schema(description = "Whether active")
+    @Schema(description = "Is active")
     private Boolean isActive;
 
-    @Schema(description = "Publication date")
+    @Schema(description = "Published date")
     private LocalDateTime publishedDate;
+
+    @Schema(description = "Faculty raising the requisition")
+    private String faculty;
+
+    @Schema(description = "Department raising the requisition")
+    private String department;
+
+    @Schema(description = "Requisition type: Consumables or Capital Goods")
+    private String requisitionType;
+
+    @Schema(description = "Current stock balance at time of requisition")
+    private Integer currentStockBalance;
+
+    @Schema(description = "Source of funding for this procurement")
+    private String fundingSource;
+
+    @Schema(description = "Budget code assigned by the Bursar")
+    private String budgetCode;
+
+    @Schema(description = "Supplier name, set after Purchase Order is raised")
+    private String supplierName;
+
+    @Schema(description = "Purchase Order number, set by the Supplies Division (SDC)")
+    private String poNumber;
+
+    @Schema(description = "GRN number, set by the Storekeeper")
+    private String grnNumber;
+
+    @Schema(description = "Invoice number, set by the Finance Division")
+    private String invoiceNumber;
+
+    @Schema(description = "Invoice amount, set by the Finance Division")
+    private BigDecimal invoiceAmount;
 }

@@ -83,8 +83,6 @@ public class Procurement {
     @Column(name = "published_date")
     private LocalDateTime publishedDate;
 
-    // ---- Requisition / faculty context ----
-
     @Column(name = "faculty")
     private String faculty;
 
@@ -99,8 +97,6 @@ public class Procurement {
 
     @Column(name = "funding_source")
     private String fundingSource;
-
-    // ---- Workflow stage data (populated as the procurement progresses) ----
 
     @Column(name = "budget_code")
     private String budgetCode; // set by Bursar
