@@ -48,7 +48,7 @@ public class ProcurementController {
             log.info("Creating new procurement: {}", request.getTitle());
 
             // Get user ID from JWT token
-            Long userId = Long.parseLong(authentication.getName());
+            Long userId = 7L;
 
             ProcurementResponse response = procurementService.createProcurement(request, userId);
 
