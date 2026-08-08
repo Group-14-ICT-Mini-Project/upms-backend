@@ -53,9 +53,7 @@ CREATE TABLE rfq_recipients (
     supplier_name VARCHAR(255),
     sent_date TIMESTAMP,
     response_status VARCHAR(20),
-    responded_date TIMESTAMP,
-    INDEX idx_procurement_id ON procurements(id),
-    INDEX idx_status ON procurements(status)
+    responded_date TIMESTAMP
 );
 
 -- Procurement Categories
