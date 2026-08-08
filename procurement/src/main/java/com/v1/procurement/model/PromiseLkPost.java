@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "promise_lk_posts", indexes = {
-        @Index(name = "idx_procurement_id", columnList = "procurement_id")
+        @Index(name = "idx_promise_procurement_id", columnList = "procurement_id")
 })
 @Data
 @NoArgsConstructor
