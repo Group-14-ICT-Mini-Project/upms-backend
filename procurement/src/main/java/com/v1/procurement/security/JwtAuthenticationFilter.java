@@ -2,12 +2,14 @@ package com.v1.procurement.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,16 +17,21 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtUtil jwtUtil;
+    @Value("${jwt.secret}")
+    private String secret;
+
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(secret.getBytes());
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -41,9 +48,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         try {
-            Claims claims = jwtUtil.validateAndExtractClaims(token);
-            String userId = jwtUtil.extractUserId(claims);
-            List<String> roles = jwtUtil.extractRoles(claims);
+            Claims claims = Jwts.parser()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            Object userIdClaim = claims.get("userId");
+            if (userIdClaim == null) {
+                log.warn("JWT missing userId claim; rejecting token for subject={}", claims.getSubject());
+                filterChain.doFilter(request, response);
+                return;
+            }
+            String userId = String.valueOf(userIdClaim);
+
+            @SuppressWarnings("unchecked")
+            List<String> roles = claims.get("roles", List.class);
 
             List<GrantedAuthority> authorities = roles == null ? List.of() :
                     roles.stream()
@@ -55,7 +75,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        } catch (JwtException e) {
+        } catch (JwtException | IllegalArgumentException e) {
             log.warn("JWT validation failed: {}", e.getMessage());
             // Leave SecurityContext empty; SecurityConfig will reject with 401
         }
