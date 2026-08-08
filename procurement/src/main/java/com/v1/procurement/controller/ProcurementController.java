@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
@@ -27,11 +28,8 @@ import java.util.List;
 @SecurityRequirement(name = "bearerAuth")
 public class ProcurementController {
 
-    private final ProcurementService procurementService;
-
-    public ProcurementController(ProcurementService procurementService) {
-        this.procurementService = procurementService;
-    }
+    @Autowired
+    ProcurementService procurementService;
 
     @PostMapping("/create")
     @Operation(

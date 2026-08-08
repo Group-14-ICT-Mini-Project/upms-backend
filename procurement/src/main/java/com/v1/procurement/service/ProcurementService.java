@@ -4,6 +4,7 @@ import com.v1.procurement.dto.*;
 import com.v1.procurement.model.*;
 import com.v1.procurement.repository.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,12 +21,18 @@ import java.util.stream.Collectors;
 @Transactional
 public class ProcurementService {
 
-    private final ProcurementRepository procurementRepository;
-    private final ProcurementMethodRepository procurementMethodRepository;
-    private final ProcurementCategoryRepository procurementCategoryRepository;
-    private final RfqRecipientRepository rfqRecipientRepository;
-    private final NewspaperPublicationRepository newspaperPublicationRepository;
-    private final PromiseLkPostRepository promiseLkPostRepository;
+    @Autowired
+    ProcurementRepository procurementRepository;
+    @Autowired
+    ProcurementMethodRepository procurementMethodRepository;
+    @Autowired
+    ProcurementCategoryRepository procurementCategoryRepository;
+    @Autowired
+    RfqRecipientRepository rfqRecipientRepository;
+    @Autowired
+    NewspaperPublicationRepository newspaperPublicationRepository;
+    @Autowired
+    PromiseLkPostRepository promiseLkPostRepository;
 
     public ProcurementService(ProcurementRepository procurementRepository,
                             ProcurementMethodRepository procurementMethodRepository,
