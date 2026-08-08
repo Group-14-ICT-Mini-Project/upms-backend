@@ -3,7 +3,7 @@
 
 -- Roles Table
 CREATE TABLE roles (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE,
     description VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -11,7 +11,7 @@ CREATE TABLE roles (
 
 -- Users Table
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     username VARCHAR(100) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
     first_name VARCHAR(100),
@@ -28,9 +28,9 @@ CREATE TABLE users (
 
 -- User Roles Mapping
 CREATE TABLE user_roles (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role_id BIGINT NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
     assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     assigned_by VARCHAR(100),
     UNIQUE(user_id, role_id)
@@ -38,8 +38,8 @@ CREATE TABLE user_roles (
 
 -- Audit Log
 CREATE TABLE audit_logs (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT REFERENCES users(id),
     action VARCHAR(100) NOT NULL,
     resource_type VARCHAR(100),
     resource_id VARCHAR(255),
@@ -51,8 +51,8 @@ CREATE TABLE audit_logs (
 
 -- Refresh Tokens (for JWT token management)
 CREATE TABLE refresh_tokens (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     token_hash VARCHAR(255) NOT NULL UNIQUE,
     expires_at TIMESTAMP NOT NULL,
     is_revoked BOOLEAN DEFAULT false,

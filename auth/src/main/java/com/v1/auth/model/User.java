@@ -64,13 +64,22 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
+    @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
     public void addRole(Role role) {
+        if (this.roles == null) {
+            this.roles = new HashSet<>();
+        }
+
         this.roles.add(role);
     }
 
     public void removeRole(Role role) {
+        if (this.roles == null) {
+            this.roles = new HashSet<>();
+        }
+
         this.roles.remove(role);
     }
 }

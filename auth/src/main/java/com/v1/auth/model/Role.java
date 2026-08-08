@@ -40,6 +40,13 @@ public class Role {
         SUPPLIER_DIVISION_CLERK,
         TEC_MEMBER,
         STORE_KEEPER,
-        FINANCE_DIVISION
+        FINANCE_DIVISION,
+        BUR,
+        SDC,
+        TEC,
+        TB,
+        STK,
+        SUP,
+        FIN
     }
 }

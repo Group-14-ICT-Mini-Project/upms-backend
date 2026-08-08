@@ -24,6 +24,14 @@ public class JwtTokenProvider {
     @Value("${app.jwt.refresh-expiration:86400000}")
     private long refreshTokenExpirationInMs;
 
+    public long getAccessTokenExpirationInMs() {
+        return jwtExpirationInMs;
+    }
+
+    public long getRefreshTokenExpirationInMs() {
+        return refreshTokenExpirationInMs;
+    }
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
@@ -95,6 +103,21 @@ public class JwtTokenProvider {
             log.error("Invalid JWT token: {}", ex.getMessage());
         }
         return false;
+    }
+
+    public boolean isRefreshToken(String token) {
+        try {
+            String tokenType = Jwts.parser()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getPayload()
+                    .get("type", String.class);
+            return "refresh".equalsIgnoreCase(tokenType);
+        } catch (Exception ex) {
+            log.error("Unable to determine token type: {}", ex.getMessage());
+            return false;
+        }
     }
 
     public long getExpirationTimeFromToken(String token) {
