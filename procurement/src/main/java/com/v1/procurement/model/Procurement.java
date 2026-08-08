@@ -83,6 +83,43 @@ public class Procurement {
     @Column(name = "published_date")
     private LocalDateTime publishedDate;
 
+    // ---- Requisition / faculty context ----
+
+    @Column(name = "faculty")
+    private String faculty;
+
+    @Column(name = "department")
+    private String department;
+
+    @Column(name = "requisition_type")
+    private String requisitionType; // "Consumables" | "Capital Goods" | null
+
+    @Column(name = "current_stock_balance")
+    private Integer currentStockBalance;
+
+    @Column(name = "funding_source")
+    private String fundingSource;
+
+    // ---- Workflow stage data (populated as the procurement progresses) ----
+
+    @Column(name = "budget_code")
+    private String budgetCode; // set by Bursar
+
+    @Column(name = "supplier_name")
+    private String supplierName; // set after Purchase Order
+
+    @Column(name = "po_number")
+    private String poNumber; // set by Supplies Division (SDC)
+
+    @Column(name = "grn_number")
+    private String grnNumber; // set by Storekeeper
+
+    @Column(name = "invoice_number")
+    private String invoiceNumber; // set by Finance Division
+
+    @Column(name = "invoice_amount")
+    private BigDecimal invoiceAmount; // set by Finance Division
+
     @PrePersist
     protected void onCreate() {
         createdDate = LocalDateTime.now();

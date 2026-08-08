@@ -80,6 +80,11 @@ public class ProcurementService {
                 .bidBondPercentage(request.getBidBondPercentage())
                 .createdByUserId(userId)
                 .isActive(true)
+                .faculty(request.getFaculty())
+                .department(request.getDepartment())
+                .requisitionType(request.getRequisitionType())
+                .currentStockBalance(request.getCurrentStockBalance())
+                .fundingSource(request.getFundingSource())
                 .build();
 
         Procurement saved = procurementRepository.save(procurement);

@@ -56,4 +56,19 @@ public class CreateProcurementRequest {
 
     @Schema(description = "Bid bond as percentage of bid value", example = "5")
     private BigDecimal bidBondPercentage;
+
+    @Schema(description = "Faculty name", example = "Faculty of Technology")
+    private String faculty;
+
+    @Schema(description = "Department name", example = "Information & Communication Technology")
+    private String department;
+
+    @Schema(description = "Requisition type", example = "Consumables")
+    private String requisitionType;
+
+    @Schema(description = "Current stock balance at time of requisition", example = "12")
+    private Integer currentStockBalance;
+
+    @Schema(description = "Funding source", example = "Faculty Recurrent Budget")
+    private String fundingSource;
 }
