@@ -78,4 +78,7 @@ public class UpdateProcurementRequest {
     @DecimalMin(value = "0.0", inclusive = true)
     @Schema(description = "Invoice amount, set by the Finance Division")
     private BigDecimal invoiceAmount;
+
+    @Schema(description = "Reason for rejecting fund verification, set by the Bursar")
+    private String rejectionReason;
 }

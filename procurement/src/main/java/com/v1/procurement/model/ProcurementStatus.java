@@ -14,7 +14,8 @@ public enum ProcurementStatus {
     PURCHASE_ORDER_ISSUED("Purchase Order Issued"),
     COMPLETED("Completed"),
     CANCELLED("Cancelled"),
-    SUSPENDED("Suspended");
+    SUSPENDED("Suspended"),
+    REJECTED("Rejected");
 
     private final String displayName;
 
