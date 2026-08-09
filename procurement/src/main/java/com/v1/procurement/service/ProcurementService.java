@@ -119,7 +119,9 @@ public class ProcurementService {
     }
 
     /**
-     * Update procurement details (only allowed while in DRAFT status)
+     * Update procurement details and workflow status.
+     * Detail edits are only allowed while in DRAFT; status transitions may be
+     * submitted by downstream workflow roles.
      */
     public ProcurementResponse updateProcurement(Long procurementId, UpdateProcurementRequest request) {
         log.info("Updating procurement: {}", procurementId);
@@ -127,7 +129,21 @@ public class ProcurementService {
         Procurement procurement = procurementRepository.findById(procurementId)
                 .orElseThrow(() -> new RuntimeException("Procurement not found"));
 
-        if (!ProcurementStatus.DRAFT.equals(procurement.getStatus())) {
+        boolean hasDetailUpdates = request.getTitle() != null
+                || request.getDescription() != null
+                || request.getEstimatedValue() != null
+                || request.getOpeningDate() != null
+                || request.getClosingDate() != null
+                || request.getDocumentFee() != null
+                || request.getRequiresBidBond() != null
+                || request.getBidBondPercentage() != null
+                || request.getFaculty() != null
+                || request.getDepartment() != null
+                || request.getRequisitionType() != null
+                || request.getCurrentStockBalance() != null
+                || request.getFundingSource() != null;
+
+        if (hasDetailUpdates && !ProcurementStatus.DRAFT.equals(procurement.getStatus())) {
             throw new RuntimeException("Can only update procurements in DRAFT status");
         }
 
@@ -144,6 +160,7 @@ public class ProcurementService {
         if (request.getRequisitionType() != null) procurement.setRequisitionType(request.getRequisitionType());
         if (request.getCurrentStockBalance() != null) procurement.setCurrentStockBalance(request.getCurrentStockBalance());
         if (request.getFundingSource() != null) procurement.setFundingSource(request.getFundingSource());
+        if (request.getStatus() != null) procurement.setStatus(resolveStatus(request.getStatus()));
 
         // Downstream workflow fields can also be corrected while still in DRAFT
         if (request.getBudgetCode() != null) procurement.setBudgetCode(request.getBudgetCode());
@@ -157,6 +174,37 @@ public class ProcurementService {
         log.info("Procurement updated successfully");
 
         return mapToProcurementResponse(updated);
+    }
+
+    public ProcurementStatus resolveStatus(String status) {
+        String normalized = status.trim()
+                .toUpperCase()
+                .replace('-', '_')
+                .replace(' ', '_');
+
+        if ("FUNDS_VERIFIED".equals(normalized)) {
+            return ProcurementStatus.FUNDS_VERIFIED;
+        }
+        if ("PENDING_FUND_VERIFICATION".equals(normalized) || "DRAFT".equals(normalized)) {
+            return ProcurementStatus.DRAFT;
+        }
+        if ("BIDDING_OPEN".equals(normalized)) {
+            return ProcurementStatus.PUBLISHED;
+        }
+        if ("TECHNICAL_EVALUATION".equals(normalized)) {
+            return ProcurementStatus.UNDER_EVALUATION;
+        }
+        if ("AUTHORITY_APPROVAL".equals(normalized)) {
+            return ProcurementStatus.EVALUATED;
+        }
+
+        for (ProcurementStatus value : ProcurementStatus.values()) {
+            if (value.name().equals(normalized) || value.getDisplayName().equalsIgnoreCase(status.trim())) {
+                return value;
+            }
+        }
+
+        throw new RuntimeException("Invalid procurement status: " + status);
     }
 
     /**

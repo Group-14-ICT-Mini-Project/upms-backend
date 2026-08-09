@@ -42,6 +42,9 @@ public class UpdateProcurementRequest {
     @Schema(description = "Bid bond percentage")
     private BigDecimal bidBondPercentage;
 
+    @Schema(description = "Workflow status. Accepts enum names such as FUNDS_VERIFIED or display labels such as Funds Verified")
+    private String status;
+
     @Schema(description = "Faculty raising the requisition")
     private String faculty;
 

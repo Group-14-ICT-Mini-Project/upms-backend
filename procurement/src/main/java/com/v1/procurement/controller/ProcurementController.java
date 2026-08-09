@@ -122,7 +122,7 @@ public class ProcurementController {
             @RequestParam(defaultValue = "10") int size) {
         try {
             log.info("Retrieving procurements by status: {}", status);
-            ProcurementStatus procStatus = ProcurementStatus.valueOf(status.toUpperCase());
+            ProcurementStatus procStatus = procurementService.resolveStatus(status);
             Page<ProcurementResponse> response = procurementService.getProcurementsByStatus(procStatus, PageRequest.of(page, size));
             return ResponseEntity.ok(response);
 

@@ -2,6 +2,8 @@ package com.v1.procurement.model;
 
 public enum ProcurementStatus {
     DRAFT("Draft"),
+    FUNDS_VERIFIED("Funds Verified"),
+    BIDDING_PREP("Bidding Prep"),
     PUBLISHED("Published"),
     OPEN("Open for Bidding"),
     CLOSING_SOON("Closing Soon"),
