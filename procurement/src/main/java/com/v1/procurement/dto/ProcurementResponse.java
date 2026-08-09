@@ -105,7 +105,4 @@ public class ProcurementResponse {
 
     @Schema(description = "Invoice amount, set by the Finance Division")
     private BigDecimal invoiceAmount;
-
-    @Schema(description = "Reason for rejecting fund verification, set by the Bursar")
-    private String rejectionReason;
 }

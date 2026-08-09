@@ -116,9 +116,6 @@ public class Procurement {
     @Column(name = "invoice_amount")
     private BigDecimal invoiceAmount; // set by Finance Division
 
-    @Column(name = "rejection_reason", columnDefinition = "TEXT")
-    private String rejectionReason; // set by Bursar when rejecting fund verification
-
     @PrePersist
     protected void onCreate() {
         createdDate = LocalDateTime.now();

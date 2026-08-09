@@ -169,7 +169,6 @@ public class ProcurementService {
         if (request.getGrnNumber() != null) procurement.setGrnNumber(request.getGrnNumber());
         if (request.getInvoiceNumber() != null) procurement.setInvoiceNumber(request.getInvoiceNumber());
         if (request.getInvoiceAmount() != null) procurement.setInvoiceAmount(request.getInvoiceAmount());
-        if (request.getRejectionReason() != null) procurement.setRejectionReason(request.getRejectionReason());
 
         Procurement updated = procurementRepository.save(procurement);
         log.info("Procurement updated successfully");
@@ -437,7 +436,6 @@ public class ProcurementService {
                 .grnNumber(procurement.getGrnNumber())
                 .invoiceNumber(procurement.getInvoiceNumber())
                 .invoiceAmount(procurement.getInvoiceAmount())
-                .rejectionReason(procurement.getRejectionReason())
                 .build();
     }
 
