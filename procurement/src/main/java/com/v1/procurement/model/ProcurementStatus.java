@@ -13,6 +13,7 @@ public enum ProcurementStatus {
     SUPPLIER_SELECTED("Supplier Selected"),
     PURCHASE_ORDER_ISSUED("Purchase Order Issued"),
     COMPLETED("Completed"),
+    REJECTED("Rejected"),
     CANCELLED("Cancelled"),
     SUSPENDED("Suspended");
 

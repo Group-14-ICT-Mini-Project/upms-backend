@@ -33,6 +33,12 @@ public class User {
     private String lastName;
 
     @Column(length = 255)
+    private String faculty;
+
+    @Column(length = 255)
+    private String department;
+
+    @Column(length = 255)
     private String passwordHash;
 
     @Column(unique = true, length = 255)

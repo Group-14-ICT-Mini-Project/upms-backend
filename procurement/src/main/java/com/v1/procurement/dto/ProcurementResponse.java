@@ -105,4 +105,7 @@ public class ProcurementResponse {
 
     @Schema(description = "Invoice amount, set by the Finance Division")
     private BigDecimal invoiceAmount;
+
+    @Schema(description = "Reason for rejection")
+    private String rejectionReason;
 }

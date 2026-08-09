@@ -103,6 +103,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .email(request.getEmail().trim())
                 .firstName(trimToNull(request.getFirstName()))
                 .lastName(trimToNull(request.getLastName()))
+                .faculty(resolveFaculty(request, role.getName()))
+                .department(resolveDepartment(request, role.getName()))
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .isActive(true)
                 .createdBy("SELF_REGISTRATION")
@@ -229,6 +231,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (request.getPassword() == null || request.getPassword().isBlank()) {
             throw new IllegalArgumentException("Password is required");
         }
+
+        String role = resolveSignupRole(request.getRole());
+        if (requiresFaculty(role) && trimToNull(request.getFaculty()) == null) {
+            throw new IllegalArgumentException("Faculty is required for this role");
+        }
+
+        if (Role.RoleEnum.HOD.name().equals(role) && trimToNull(request.getDepartment()) == null) {
+            throw new IllegalArgumentException("Department is required for HOD users");
+        }
     }
 
     private String resolveSignupRole(String requestedRole) {
@@ -248,6 +259,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
+    private boolean requiresFaculty(String role) {
+        return Role.RoleEnum.HOD.name().equals(role)
+                || Role.RoleEnum.FACULTY_BURSAR.name().equals(role)
+                || Role.RoleEnum.FACULTY_DEAN.name().equals(role);
+    }
+
+    private String resolveFaculty(SignupRequest request, String role) {
+        return requiresFaculty(role) ? trimToNull(request.getFaculty()) : null;
+    }
+
+    private String resolveDepartment(SignupRequest request, String role) {
+        return Role.RoleEnum.HOD.name().equals(role) ? trimToNull(request.getDepartment()) : null;
+    }
+
     private LoginResponse buildLoginResponse(User user, String accessToken, String refreshToken) {
         return LoginResponse.builder()
                 .accessToken(accessToken)
@@ -257,6 +282,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .userId(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
+                .faculty(user.getFaculty())
+                .department(user.getDepartment())
                 .roles(extractRoleNames(user.getRoles()))
                 .lastLogin(user.getLastLogin())
                 .build();

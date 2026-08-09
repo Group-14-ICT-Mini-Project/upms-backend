@@ -33,6 +33,12 @@ public class LoginResponse {
     @Schema(description = "User email")
     private String email;
 
+    @Schema(description = "User faculty")
+    private String faculty;
+
+    @Schema(description = "User department")
+    private String department;
+
     @Schema(description = "User roles")
     private Set<String> roles;
 

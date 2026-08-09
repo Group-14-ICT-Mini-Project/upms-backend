@@ -116,6 +116,9 @@ public class Procurement {
     @Column(name = "invoice_amount")
     private BigDecimal invoiceAmount; // set by Finance Division
 
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason; // set when a workflow role rejects the procurement
+
     @PrePersist
     protected void onCreate() {
         createdDate = LocalDateTime.now();

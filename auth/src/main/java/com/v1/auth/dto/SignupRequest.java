@@ -28,6 +28,12 @@ public class SignupRequest {
     @Schema(description = "Last name", example = "Doe")
     private String lastName;
 
+    @Schema(description = "Faculty for HOD and faculty-level roles", example = "FACULTY_OF_APPLIED_SCIENCES")
+    private String faculty;
+
+    @Schema(description = "Department for HOD users", example = "Computer Science")
+    private String department;
+
     @Schema(description = "Role to assign at signup", example = "BIDDER")
     private String role;
 }
