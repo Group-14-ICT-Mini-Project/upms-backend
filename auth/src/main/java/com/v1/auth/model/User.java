@@ -47,6 +47,26 @@ public class User {
     @Column(nullable = false)
     private Boolean isActive = true;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private ApprovalStatus approvalStatus = ApprovalStatus.APPROVED;
+
+    @Column
+    private LocalDateTime approvedAt;
+
+    @Column(length = 100)
+    private String approvedBy;
+
+    @Column
+    private LocalDateTime rejectedAt;
+
+    @Column(length = 100)
+    private String rejectedBy;
+
+    @Column(length = 500)
+    private String rejectionReason;
+
     @Column
     private LocalDateTime lastLogin;
 

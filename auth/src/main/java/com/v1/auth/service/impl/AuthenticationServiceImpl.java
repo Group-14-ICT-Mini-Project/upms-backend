@@ -4,7 +4,9 @@ import com.v1.auth.dto.LoginRequest;
 import com.v1.auth.dto.LoginResponse;
 import com.v1.auth.dto.RefreshTokenRequest;
 import com.v1.auth.dto.SignupRequest;
+import com.v1.auth.dto.SignupResponse;
 import com.v1.auth.model.AuditLog;
+import com.v1.auth.model.ApprovalStatus;
 import com.v1.auth.model.RefreshToken;
 import com.v1.auth.model.Role;
 import com.v1.auth.model.User;
@@ -63,9 +65,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .or(() -> userRepository.findByEmail(loginValue))
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
 
-        if (!Boolean.TRUE.equals(user.getIsActive())) {
-            throw new RuntimeException("User account is inactive");
-        }
+        enforceApprovedUser(user);
 
         if (user.getPasswordHash() == null || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new RuntimeException("Invalid credentials");
@@ -84,7 +84,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public LoginResponse signup(SignupRequest request) {
+    public SignupResponse signup(SignupRequest request) {
         validateSignupRequest(request);
 
         if (userRepository.existsByUsername(request.getUsername().trim())) {
@@ -106,20 +106,24 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .faculty(resolveFaculty(request, role.getName()))
                 .department(resolveDepartment(request, role.getName()))
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .isActive(true)
+                .isActive(false)
+                .approvalStatus(ApprovalStatus.PENDING)
                 .createdBy("SELF_REGISTRATION")
                 .updatedBy("SELF_REGISTRATION")
                 .build();
         user.addRole(role);
 
         User savedUser = userRepository.save(user);
-        String accessToken = jwtTokenProvider.generateAccessToken(savedUser.getId(), savedUser.getUsername(), extractRoleNames(savedUser.getRoles()));
-        String refreshToken = jwtTokenProvider.generateRefreshToken(savedUser.getId(), savedUser.getUsername());
 
-        persistRefreshToken(savedUser.getId(), refreshToken);
-        writeAuditLog(savedUser.getId(), "SIGNUP", "AUTHENTICATION", String.valueOf(savedUser.getId()), "SUCCESS", buildAuditDetails(savedUser, "User registered successfully"));
+        writeAuditLog(savedUser.getId(), "SIGNUP_REQUEST", "AUTHENTICATION", String.valueOf(savedUser.getId()), "SUCCESS", buildAuditDetails(savedUser, "Access request submitted for admin approval"));
 
-        return buildLoginResponse(savedUser, accessToken, refreshToken);
+        return SignupResponse.builder()
+                .userId(savedUser.getId())
+                .username(savedUser.getUsername())
+                .email(savedUser.getEmail())
+                .approvalStatus(savedUser.getApprovalStatus().name())
+                .message("Your access request has been submitted and is waiting for administrator approval.")
+                .build();
     }
 
     public LoginResponse refreshToken(RefreshTokenRequest request) {
@@ -146,9 +150,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!Boolean.TRUE.equals(user.getIsActive())) {
-            throw new RuntimeException("User account is inactive");
-        }
+        enforceApprovedUser(user);
 
         storedToken.setIsRevoked(true);
         storedToken.setRevokedAt(LocalDateTime.now());
@@ -179,9 +181,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!Boolean.TRUE.equals(user.getIsActive())) {
-            throw new RuntimeException("User account is inactive");
-        }
+        enforceApprovedUser(user);
     }
 
     public void logout(String authHeader) {
@@ -239,6 +239,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         if (Role.RoleEnum.HOD.name().equals(role) && trimToNull(request.getDepartment()) == null) {
             throw new IllegalArgumentException("Department is required for HOD users");
+        }
+    }
+
+    private void enforceApprovedUser(User user) {
+        if (user.getApprovalStatus() == ApprovalStatus.PENDING) {
+            throw new RuntimeException("Your access request is still waiting for administrator approval.");
+        }
+
+        if (user.getApprovalStatus() == ApprovalStatus.REJECTED) {
+            throw new RuntimeException("Your access request was rejected. Please contact the system administrator.");
+        }
+
+        if (!Boolean.TRUE.equals(user.getIsActive()) || user.getApprovalStatus() != ApprovalStatus.APPROVED) {
+            throw new RuntimeException("User account is inactive");
         }
     }
 

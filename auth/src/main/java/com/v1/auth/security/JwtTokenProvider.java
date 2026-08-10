@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 @Slf4j
@@ -84,12 +86,24 @@ public class JwtTokenProvider {
 
     @SuppressWarnings("unchecked")
     public Set<String> getRolesFromJWT(String token) {
-        return (Set<String>) Jwts.parser()
+        Object roles = Jwts.parser()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getPayload()
                 .get("roles");
+
+        if (roles instanceof Collection<?> roleCollection) {
+            Set<String> roleNames = new HashSet<>();
+            roleCollection.forEach(role -> {
+                if (role != null) {
+                    roleNames.add(role.toString());
+                }
+            });
+            return roleNames;
+        }
+
+        return Set.of();
     }
 
     public boolean validateToken(String token) {

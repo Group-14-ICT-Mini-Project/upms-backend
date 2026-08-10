@@ -4,6 +4,7 @@ import com.v1.auth.dto.LoginRequest;
 import com.v1.auth.dto.LoginResponse;
 import com.v1.auth.dto.RefreshTokenRequest;
 import com.v1.auth.dto.SignupRequest;
+import com.v1.auth.dto.SignupResponse;
 import com.v1.auth.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -50,16 +51,16 @@ public class AuthenticationController {
         @PostMapping("/signup")
         @Operation(
                         summary = "User signup",
-                        description = "Create a new user account, assign a default role, and return JWT tokens.",
+                        description = "Create a new access request pending administrator approval.",
                         responses = {
-                                        @ApiResponse(responseCode = "200", description = "Signup successful",
-                                                        content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponse.class))),
+                                        @ApiResponse(responseCode = "202", description = "Access request submitted",
+                                                        content = @Content(mediaType = "application/json", schema = @Schema(implementation = SignupResponse.class))),
                                         @ApiResponse(responseCode = "400", description = "Invalid signup data")
                         }
         )
         public ResponseEntity<?> signup(@RequestBody SignupRequest signupRequest) {
                 try {
-                        return ResponseEntity.ok(authenticationService.signup(signupRequest));
+                        return ResponseEntity.status(HttpStatus.ACCEPTED).body(authenticationService.signup(signupRequest));
                 } catch (IllegalArgumentException e) {
                         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
                 } catch (RuntimeException e) {
