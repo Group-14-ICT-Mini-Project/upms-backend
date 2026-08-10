@@ -158,10 +158,20 @@ public class ProcurementController {
     )
     public ResponseEntity<?> updateProcurement(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateProcurementRequest request) {
+            @Valid @RequestBody UpdateProcurementRequest request,
+            Authentication authentication) {
         try {
             log.info("Updating procurement: {}", id);
-            ProcurementResponse response = procurementService.updateProcurement(id, request);
+            //ProcurementResponse response = procurementService.updateProcurement(id, request);
+            // Get user role
+            String role = authentication.getAuthorities()
+                    .stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .findFirst()
+                    .orElse("");
+
+            ProcurementResponse response =
+                    procurementService.updateProcurement(id, request, role);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {

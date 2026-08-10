@@ -45,12 +45,12 @@ public class CreateProcurementRequest {
     @Schema(description = "Bid closing date and time")
     private LocalDateTime closingDate;
 
-    @NotNull(message = "Document fee is required")
+    //@NotNull(message = "Document fee is required")
     @DecimalMin(value = "0.0")
     @Schema(description = "Document fee amount", example = "8000.00")
     private BigDecimal documentFee;
 
-    @NotNull(message = "Bid bond requirement must be specified")
+    //@NotNull(message = "Bid bond requirement must be specified")
     @Schema(description = "Whether bid bond is required", example = "true")
     private Boolean requiresBidBond;
 
