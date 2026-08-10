@@ -320,6 +320,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     private void enforceApprovedUser(User user) {
+        if (user.getApprovalStatus() == null && Boolean.TRUE.equals(user.getIsActive())) {
+            user.setApprovalStatus(ApprovalStatus.APPROVED);
+            user.setApprovedAt(LocalDateTime.now());
+            user.setApprovedBy("LEGACY_LOGIN_COMPATIBILITY");
+            user.setUpdatedBy("LEGACY_LOGIN_COMPATIBILITY");
+            userRepository.save(user);
+            return;
+        }
+
         if (user.getApprovalStatus() == ApprovalStatus.PENDING) {
             throw new RuntimeException("Your access request is still waiting for administrator approval.");
         }
