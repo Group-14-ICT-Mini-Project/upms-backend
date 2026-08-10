@@ -51,7 +51,11 @@ public class ProcurementService {
     /**
      * Create a new procurement with automatic method selection
      */
-    public ProcurementResponse createProcurement(CreateProcurementRequest request, Long userId) {
+    //public ProcurementResponse createProcurement(CreateProcurementRequest request, Long userId)
+    public ProcurementResponse createProcurement(
+            CreateProcurementRequest request,
+            Long userId,
+            String role){
         log.info("Creating new procurement with estimated value: {}", request.getEstimatedValue());
 
         // Validate method and category exist
@@ -82,10 +86,18 @@ public class ProcurementService {
                 .isActive(true)
                 .faculty(request.getFaculty())
                 .department(request.getDepartment())
-                .requisitionType(request.getRequisitionType())
+                //.requisitionType(request.getRequisitionType())
                 .currentStockBalance(request.getCurrentStockBalance())
-                .fundingSource(request.getFundingSource())
+                //.fundingSource(request.getFundingSource())
                 .build();
+
+        // Only non-HOD users can set these fields (NEW Upadate)
+        if (!"HOD".equalsIgnoreCase(role) &&
+                !"ROLE_HOD".equalsIgnoreCase(role)) {
+
+            procurement.setRequisitionType(request.getRequisitionType());
+            procurement.setFundingSource(request.getFundingSource());
+        }
 
         Procurement saved = procurementRepository.save(procurement);
         log.info("Procurement created successfully with reference: {}", referenceNumber);
