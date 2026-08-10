@@ -58,15 +58,10 @@ public class Procurement {
     @Column(name = "closing_date", nullable = false)
     private LocalDateTime closingDate;
 
-    //@Column(name = "document_fee", nullable = false)
-    //private BigDecimal documentFee;
-    @Column(name = "document_fee")
+    @Column(name = "document_fee", nullable = false)
     private BigDecimal documentFee;
 
-    //@Column(name = "requires_bid_bond", nullable = false)
-    //private Boolean requiresBidBond;
-
-    @Column(name = "requires_bid_bond")
+    @Column(name = "requires_bid_bond", nullable = false)
     private Boolean requiresBidBond;
 
     @Column(name = "bid_bond_percentage")
