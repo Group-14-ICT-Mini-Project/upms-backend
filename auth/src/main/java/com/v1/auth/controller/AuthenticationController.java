@@ -80,7 +80,7 @@ public class AuthenticationController {
                                                         content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponse.class))),
                                         @ApiResponse(responseCode = "400", description = "Missing Microsoft token"),
                                         @ApiResponse(responseCode = "401", description = "Microsoft token is invalid"),
-                                        @ApiResponse(responseCode = "403", description = "UPMS access has not been approved")
+                                  //      @ApiResponse(responseCode = "403", description = "UPMS access has not been approved")
                         }
         )
         public ResponseEntity<?> microsoftLogin(@Valid @RequestBody MicrosoftLoginRequest request) {
