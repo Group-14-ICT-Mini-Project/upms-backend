@@ -22,7 +22,7 @@ SELECT
     'admin@upms.local',
     'System',
     'Administrator',
-    '$2a$10$9Lb3gxlUwIbZ3uNj3M4m5OBI45VAci05gvwdEILYuIUadEkUUth8q',
+    '$2a$10$6J10wT1UjxXMZ8FiuUhx6OUdiSDr2GGLRGSl7SXOHF6RkSd4ac/K2',
     true,
     'APPROVED',
     CURRENT_TIMESTAMP,
