@@ -88,6 +88,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .or(() -> userRepository.findByEmail(loginValue))
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
 
+        approveTestingAdminIfNeeded(user);
         enforceApprovedUser(user);
 
         if (user.getPasswordHash() == null || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
@@ -120,6 +121,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         Role role = roleRepository.findByName(resolveSignupRole(request.getRole()))
                 .orElseThrow(() -> new IllegalArgumentException("Requested role not found"));
+        boolean isTestingAdminSignup = Role.RoleEnum.ADMIN.name().equals(role.getName());
+        LocalDateTime approvedAt = isTestingAdminSignup ? LocalDateTime.now() : null;
 
         User user = User.builder()
                 .username(request.getUsername().trim())
@@ -129,8 +132,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .faculty(resolveFaculty(request, role.getName()))
                 .department(resolveDepartment(request, role.getName()))
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .isActive(false)
-                .approvalStatus(ApprovalStatus.PENDING)
+                .isActive(isTestingAdminSignup)
+                .approvalStatus(isTestingAdminSignup ? ApprovalStatus.APPROVED : ApprovalStatus.PENDING)
+                .approvedAt(approvedAt)
+                .approvedBy(isTestingAdminSignup ? "SELF_REGISTRATION_TEST_BYPASS" : null)
                 .createdBy("SELF_REGISTRATION")
                 .updatedBy("SELF_REGISTRATION")
                 .build();
@@ -138,14 +143,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         User savedUser = userRepository.save(user);
 
-        writeAuditLog(savedUser.getId(), "SIGNUP_REQUEST", "AUTHENTICATION", String.valueOf(savedUser.getId()), "SUCCESS", buildAuditDetails(savedUser, "Access request submitted for admin approval"));
+        String auditMessage = isTestingAdminSignup
+                ? "Testing admin account registered with approval bypass"
+                : "Access request submitted for admin approval";
+        writeAuditLog(savedUser.getId(), "SIGNUP_REQUEST", "AUTHENTICATION", String.valueOf(savedUser.getId()), "SUCCESS", buildAuditDetails(savedUser, auditMessage));
 
         return SignupResponse.builder()
                 .userId(savedUser.getId())
                 .username(savedUser.getUsername())
                 .email(savedUser.getEmail())
                 .approvalStatus(savedUser.getApprovalStatus().name())
-                .message("Your access request has been submitted and is waiting for administrator approval.")
+                .message(isTestingAdminSignup
+                        ? "Testing admin account created. You can sign in now."
+                        : "Your access request has been submitted and is waiting for administrator approval.")
                 .build();
     }
 
@@ -171,6 +181,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .or(() -> userRepository.findByEmailIgnoreCase(email))
                 .orElseThrow(() -> new SecurityException("UPMS access has not been approved for this Microsoft account"));
 
+        approveTestingAdminIfNeeded(user);
         enforceApprovedUser(user);
 
         if (user.getAzureId() == null || user.getAzureId().isBlank()) {
@@ -214,6 +225,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        approveTestingAdminIfNeeded(user);
         enforceApprovedUser(user);
 
         storedToken.setIsRevoked(true);
@@ -245,6 +257,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        approveTestingAdminIfNeeded(user);
         enforceApprovedUser(user);
     }
 
@@ -318,6 +331,32 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (!Boolean.TRUE.equals(user.getIsActive()) || user.getApprovalStatus() != ApprovalStatus.APPROVED) {
             throw new RuntimeException("User account is inactive");
         }
+    }
+
+    private void approveTestingAdminIfNeeded(User user) {
+        if (!isAdminUser(user)) {
+            return;
+        }
+
+        if (Boolean.TRUE.equals(user.getIsActive()) && user.getApprovalStatus() == ApprovalStatus.APPROVED) {
+            return;
+        }
+
+        user.setIsActive(true);
+        user.setApprovalStatus(ApprovalStatus.APPROVED);
+        user.setApprovedAt(LocalDateTime.now());
+        user.setApprovedBy("ADMIN_TESTING_LOGIN_BYPASS");
+        user.setRejectedAt(null);
+        user.setRejectedBy(null);
+        user.setRejectionReason(null);
+        user.setUpdatedBy("ADMIN_TESTING_LOGIN_BYPASS");
+        userRepository.save(user);
+        writeAuditLog(user.getId(), "ADMIN_TESTING_APPROVAL_BYPASS", "AUTHENTICATION", String.valueOf(user.getId()), "SUCCESS", buildAuditDetails(user, "Admin testing account auto-approved during login"));
+    }
+
+    private boolean isAdminUser(User user) {
+        return user.getRoles() != null
+                && user.getRoles().stream().anyMatch(role -> Role.RoleEnum.ADMIN.name().equals(role.getName()));
     }
 
     private Jwt decodeMicrosoftToken(String accessToken) {
