@@ -32,11 +32,14 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.HexFormat;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -170,16 +173,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         String tenantId = trimToNull(microsoftToken.getClaimAsString("tid"));
         String objectId = trimToNull(microsoftToken.getClaimAsString("oid"));
-        String email = resolveMicrosoftEmail(microsoftToken);
+        Set<String> emailCandidates = resolveMicrosoftEmails(microsoftToken);
 
         if (tenantId == null || objectId == null) {
             throw new RuntimeException("Microsoft token is missing required identity claims");
         }
 
         String azureId = tenantId + ":" + objectId;
-        User user = userRepository.findByAzureId(azureId)
-                .or(() -> userRepository.findByEmailIgnoreCase(email))
-                .orElseThrow(() -> new SecurityException("UPMS access has not been approved for this Microsoft account"));
+        User user = findMicrosoftUser(azureId, emailCandidates)
+                .orElseThrow(() -> {
+                    log.warn("Microsoft login rejected because no approved UPMS user matched azureId={} or token emails={}", azureId, emailCandidates);
+                    return new SecurityException("UPMS access has not been approved for this Microsoft account");
+                });
 
         approveTestingAdminIfNeeded(user);
         enforceApprovedUser(user);
@@ -396,25 +401,62 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new RuntimeException("Microsoft token audience is not allowed");
         }
 
-        String email = resolveMicrosoftEmail(token);
         String allowedDomain = trimToNull(microsoftAllowedDomain);
-        if (allowedDomain != null && !email.toLowerCase().endsWith("@" + allowedDomain.toLowerCase())) {
+        Set<String> emailCandidates = resolveMicrosoftEmails(token);
+        if (allowedDomain != null && emailCandidates.stream().noneMatch(email -> email.endsWith("@" + allowedDomain.toLowerCase()))) {
+            log.warn("Microsoft token rejected because email candidates {} do not match allowed domain {}", emailCandidates, allowedDomain);
             throw new SecurityException("Only approved university Microsoft accounts can sign in");
         }
     }
 
-    private String resolveMicrosoftEmail(Jwt token) {
-        String email = trimToNull(token.getClaimAsString("preferred_username"));
+    private Set<String> resolveMicrosoftEmails(Jwt token) {
+        Set<String> emails = new LinkedHashSet<>();
+        addEmailClaim(emails, token, "preferred_username");
+        addEmailClaim(emails, token, "email");
+        addEmailClaim(emails, token, "upn");
+        addEmailClaim(emails, token, "unique_name");
+        addEmailClaim(emails, token, "verified_primary_email");
+        addEmailClaim(emails, token, "emails");
+        return emails;
+    }
 
-        if (email == null) {
-            email = trimToNull(token.getClaimAsString("email"));
+    private void addEmailClaim(Set<String> emails, Jwt token, String claimName) {
+        addEmailValue(emails, token.getClaims().get(claimName));
+    }
+
+    private void addEmailValue(Set<String> emails, Object value) {
+        if (value instanceof Collection<?> values) {
+            values.forEach(item -> addEmailValue(emails, item));
+            return;
         }
 
-        if (email == null) {
-            throw new RuntimeException("Microsoft token does not include an email address");
+        if (value instanceof String candidate) {
+            String email = trimToNull(candidate);
+            if (email != null && email.contains("@")) {
+                emails.add(email.toLowerCase());
+            }
+        }
+    }
+
+    private Optional<User> findMicrosoftUser(String azureId, Set<String> emailCandidates) {
+        Optional<User> userByAzureId = userRepository.findByAzureId(azureId);
+        if (userByAzureId.isPresent()) {
+            return userByAzureId;
         }
 
-        return email.toLowerCase();
+        for (String email : emailCandidates) {
+            Optional<User> userByEmail = userRepository.findByEmailIgnoreCase(email);
+            if (userByEmail.isPresent()) {
+                return userByEmail;
+            }
+
+            Optional<User> userByUsername = userRepository.findByUsernameIgnoreCase(email);
+            if (userByUsername.isPresent()) {
+                return userByUsername;
+            }
+        }
+
+        return Optional.empty();
     }
 
     private String resolveSignupRole(String requestedRole) {
