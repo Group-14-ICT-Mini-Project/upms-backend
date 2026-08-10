@@ -2,6 +2,7 @@ package com.v1.auth.service.impl;
 
 import com.v1.auth.dto.LoginRequest;
 import com.v1.auth.dto.LoginResponse;
+import com.v1.auth.dto.MicrosoftLoginRequest;
 import com.v1.auth.dto.RefreshTokenRequest;
 import com.v1.auth.dto.SignupRequest;
 import com.v1.auth.dto.SignupResponse;
@@ -18,6 +19,11 @@ import com.v1.auth.security.JwtTokenProvider;
 import com.v1.auth.service.AuthenticationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,6 +62,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+
+    @Value("${app.microsoft.issuer-uri}")
+    private String microsoftIssuerUri;
+
+    @Value("${app.microsoft.tenant-id}")
+    private String microsoftTenantId;
+
+    @Value("${app.microsoft.client-id}")
+    private String microsoftClientId;
+
+    @Value("${app.microsoft.allowed-audience}")
+    private String microsoftAllowedAudience;
+
+    @Value("${app.microsoft.allowed-domain:}")
+    private String microsoftAllowedDomain;
+
+    private JwtDecoder microsoftJwtDecoder;
 
     public LoginResponse login(LoginRequest request) {
         validateLoginRequest(request);
@@ -124,6 +147,47 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .approvalStatus(savedUser.getApprovalStatus().name())
                 .message("Your access request has been submitted and is waiting for administrator approval.")
                 .build();
+    }
+
+    @Override
+    public LoginResponse microsoftLogin(MicrosoftLoginRequest request) {
+        if (request == null || request.getAccessToken() == null || request.getAccessToken().isBlank()) {
+            throw new IllegalArgumentException("Microsoft access token is required");
+        }
+
+        Jwt microsoftToken = decodeMicrosoftToken(request.getAccessToken().trim());
+        validateMicrosoftToken(microsoftToken);
+
+        String tenantId = trimToNull(microsoftToken.getClaimAsString("tid"));
+        String objectId = trimToNull(microsoftToken.getClaimAsString("oid"));
+        String email = resolveMicrosoftEmail(microsoftToken);
+
+        if (tenantId == null || objectId == null) {
+            throw new RuntimeException("Microsoft token is missing required identity claims");
+        }
+
+        String azureId = tenantId + ":" + objectId;
+        User user = userRepository.findByAzureId(azureId)
+                .or(() -> userRepository.findByEmailIgnoreCase(email))
+                .orElseThrow(() -> new SecurityException("UPMS access has not been approved for this Microsoft account"));
+
+        enforceApprovedUser(user);
+
+        if (user.getAzureId() == null || user.getAzureId().isBlank()) {
+            user.setAzureId(azureId);
+        }
+
+        user.setLastLogin(LocalDateTime.now());
+        user.setUpdatedBy("MICROSOFT_LOGIN");
+        userRepository.save(user);
+
+        String accessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getUsername(), extractRoleNames(user.getRoles()));
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId(), user.getUsername());
+
+        persistRefreshToken(user.getId(), refreshToken);
+        writeAuditLog(user.getId(), "MICROSOFT_LOGIN", "AUTHENTICATION", String.valueOf(user.getId()), "SUCCESS", buildAuditDetails(user, "Microsoft login successful"));
+
+        return buildLoginResponse(user, accessToken, refreshToken);
     }
 
     public LoginResponse refreshToken(RefreshTokenRequest request) {
@@ -254,6 +318,55 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (!Boolean.TRUE.equals(user.getIsActive()) || user.getApprovalStatus() != ApprovalStatus.APPROVED) {
             throw new RuntimeException("User account is inactive");
         }
+    }
+
+    private Jwt decodeMicrosoftToken(String accessToken) {
+        try {
+            if (microsoftJwtDecoder == null) {
+                microsoftJwtDecoder = NimbusJwtDecoder.withIssuerLocation(microsoftIssuerUri).build();
+            }
+
+            return microsoftJwtDecoder.decode(accessToken);
+        } catch (JwtException e) {
+            throw new RuntimeException("Microsoft token is invalid or expired", e);
+        }
+    }
+
+    private void validateMicrosoftToken(Jwt token) {
+        String issuer = token.getIssuer() == null ? null : token.getIssuer().toString();
+        if (!microsoftIssuerUri.equals(issuer)) {
+            throw new RuntimeException("Microsoft token issuer is not trusted");
+        }
+
+        String tenantId = token.getClaimAsString("tid");
+        if (!microsoftTenantId.equals(tenantId)) {
+            throw new RuntimeException("Microsoft token tenant is not allowed");
+        }
+
+        List<String> audiences = token.getAudience();
+        if (!audiences.contains(microsoftAllowedAudience) && !audiences.contains(microsoftClientId)) {
+            throw new RuntimeException("Microsoft token audience is not allowed");
+        }
+
+        String email = resolveMicrosoftEmail(token);
+        String allowedDomain = trimToNull(microsoftAllowedDomain);
+        if (allowedDomain != null && !email.toLowerCase().endsWith("@" + allowedDomain.toLowerCase())) {
+            throw new SecurityException("Only approved university Microsoft accounts can sign in");
+        }
+    }
+
+    private String resolveMicrosoftEmail(Jwt token) {
+        String email = trimToNull(token.getClaimAsString("preferred_username"));
+
+        if (email == null) {
+            email = trimToNull(token.getClaimAsString("email"));
+        }
+
+        if (email == null) {
+            throw new RuntimeException("Microsoft token does not include an email address");
+        }
+
+        return email.toLowerCase();
     }
 
     private String resolveSignupRole(String requestedRole) {

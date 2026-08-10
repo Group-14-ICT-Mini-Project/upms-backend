@@ -2,6 +2,7 @@ package com.v1.auth.controller;
 
 import com.v1.auth.dto.LoginRequest;
 import com.v1.auth.dto.LoginResponse;
+import com.v1.auth.dto.MicrosoftLoginRequest;
 import com.v1.auth.dto.RefreshTokenRequest;
 import com.v1.auth.dto.SignupRequest;
 import com.v1.auth.dto.SignupResponse;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -66,6 +68,32 @@ public class AuthenticationController {
                 } catch (RuntimeException e) {
                         log.warn("Signup failed: {}", e.getMessage());
                         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+                }
+        }
+
+        @PostMapping("/microsoft")
+        @Operation(
+                        summary = "Microsoft login",
+                        description = "Authenticate a Microsoft Entra user and return UPMS JWT tokens.",
+                        responses = {
+                                        @ApiResponse(responseCode = "200", description = "Microsoft login successful",
+                                                        content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponse.class))),
+                                        @ApiResponse(responseCode = "400", description = "Missing Microsoft token"),
+                                        @ApiResponse(responseCode = "401", description = "Microsoft token is invalid"),
+                                        @ApiResponse(responseCode = "403", description = "UPMS access has not been approved")
+                        }
+        )
+        public ResponseEntity<?> microsoftLogin(@Valid @RequestBody MicrosoftLoginRequest request) {
+                try {
+                        return ResponseEntity.ok(authenticationService.microsoftLogin(request));
+                } catch (IllegalArgumentException e) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+                } catch (SecurityException e) {
+                        log.warn("Microsoft login rejected: {}", e.getMessage());
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+                } catch (RuntimeException e) {
+                        log.warn("Microsoft login failed: {}", e.getMessage());
+                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
                 }
         }
 
