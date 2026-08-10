@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    @Value("${jwt.secret}")
+    @Value("${app.jwt.secret:${jwt.secret:mySecretKeyForJWTTokenGenerationAndValidation2024}}")
     private String secret;
 
     private SecretKey getSigningKey() {

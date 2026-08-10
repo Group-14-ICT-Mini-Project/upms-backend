@@ -13,7 +13,7 @@ import java.util.List;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret}")
+    @Value("${app.jwt.secret:${jwt.secret:mySecretKeyForJWTTokenGenerationAndValidation2024}}")
     private String secret;
 
     private SecretKey getSigningKey() {
