@@ -79,9 +79,9 @@ public class ProcurementService {
                 .status(ProcurementStatus.DRAFT)
                 .openingDate(request.getOpeningDate())
                 .closingDate(request.getClosingDate())
-                .documentFee(request.getDocumentFee())
-                .requiresBidBond(request.getRequiresBidBond())
-                .bidBondPercentage(request.getBidBondPercentage())
+                //.documentFee(request.getDocumentFee())
+                //.requiresBidBond(request.getRequiresBidBond())
+                //.bidBondPercentage(request.getBidBondPercentage())
                 .createdByUserId(userId)
                 .isActive(true)
                 .faculty(request.getFaculty())
@@ -91,12 +91,24 @@ public class ProcurementService {
                 //.fundingSource(request.getFundingSource())
                 .build();
 
-        // Only non-HOD users can set these fields (NEW Upadate)
+        // Only non-HOD users can update these fields
         if (!"HOD".equalsIgnoreCase(role) &&
                 !"ROLE_HOD".equalsIgnoreCase(role)) {
 
-            procurement.setRequisitionType(request.getRequisitionType());
-            procurement.setFundingSource(request.getFundingSource());
+            if (request.getDocumentFee() != null)
+                procurement.setDocumentFee(request.getDocumentFee());
+
+            if (request.getRequiresBidBond() != null)
+                procurement.setRequiresBidBond(request.getRequiresBidBond());
+
+            if (request.getBidBondPercentage() != null)
+                procurement.setBidBondPercentage(request.getBidBondPercentage());
+
+            if (request.getRequisitionType() != null)
+                procurement.setRequisitionType(request.getRequisitionType());
+
+            if (request.getFundingSource() != null)
+                procurement.setFundingSource(request.getFundingSource());
         }
 
         Procurement saved = procurementRepository.save(procurement);
@@ -135,7 +147,7 @@ public class ProcurementService {
      * Detail edits are only allowed while in DRAFT; status transitions may be
      * submitted by downstream workflow roles.
      */
-    public ProcurementResponse updateProcurement(Long procurementId, UpdateProcurementRequest request) {
+    public ProcurementResponse updateProcurement(Long procurementId, UpdateProcurementRequest request,String role) {
         log.info("Updating procurement: {}", procurementId);
 
         Procurement procurement = procurementRepository.findById(procurementId)
@@ -164,15 +176,34 @@ public class ProcurementService {
         if (request.getEstimatedValue() != null) procurement.setEstimatedValue(request.getEstimatedValue());
         if (request.getOpeningDate() != null) procurement.setOpeningDate(request.getOpeningDate());
         if (request.getClosingDate() != null) procurement.setClosingDate(request.getClosingDate());
-        if (request.getDocumentFee() != null) procurement.setDocumentFee(request.getDocumentFee());
-        if (request.getRequiresBidBond() != null) procurement.setRequiresBidBond(request.getRequiresBidBond());
-        if (request.getBidBondPercentage() != null) procurement.setBidBondPercentage(request.getBidBondPercentage());
+        //if (request.getDocumentFee() != null) procurement.setDocumentFee(request.getDocumentFee());
+        //if (request.getRequiresBidBond() != null) procurement.setRequiresBidBond(request.getRequiresBidBond());
+        //if (request.getBidBondPercentage() != null) procurement.setBidBondPercentage(request.getBidBondPercentage());
         if (request.getFaculty() != null) procurement.setFaculty(request.getFaculty());
         if (request.getDepartment() != null) procurement.setDepartment(request.getDepartment());
-        if (request.getRequisitionType() != null) procurement.setRequisitionType(request.getRequisitionType());
+        //if (request.getRequisitionType() != null) procurement.setRequisitionType(request.getRequisitionType());
         if (request.getCurrentStockBalance() != null) procurement.setCurrentStockBalance(request.getCurrentStockBalance());
-        if (request.getFundingSource() != null) procurement.setFundingSource(request.getFundingSource());
+        //if (request.getFundingSource() != null) procurement.setFundingSource(request.getFundingSource());
         if (request.getStatus() != null) procurement.setStatus(resolveStatus(request.getStatus()));
+        // Only non-HOD users can update these fields
+        if (!"HOD".equalsIgnoreCase(role) &&
+                !"ROLE_HOD".equalsIgnoreCase(role)) {
+
+            if (request.getDocumentFee() != null)
+                procurement.setDocumentFee(request.getDocumentFee());
+
+            if (request.getRequiresBidBond() != null)
+                procurement.setRequiresBidBond(request.getRequiresBidBond());
+
+            if (request.getBidBondPercentage() != null)
+                procurement.setBidBondPercentage(request.getBidBondPercentage());
+
+            if (request.getRequisitionType() != null)
+                procurement.setRequisitionType(request.getRequisitionType());
+
+            if (request.getFundingSource() != null)
+                procurement.setFundingSource(request.getFundingSource());
+        }
 
         // Downstream workflow fields can also be corrected while still in DRAFT
         if (request.getBudgetCode() != null) procurement.setBudgetCode(request.getBudgetCode());
