@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.util.List;
 
@@ -48,9 +49,22 @@ public class ProcurementController {
             log.info("Creating new procurement: {}", request.getTitle());
 
             // Get user ID from JWT token
+            //Long userId = Long.parseLong(authentication.getName());
+
+            //ProcurementResponse response = procurementService.createProcurement(request, userId);
+
+            // Get user ID from JWT token
             Long userId = Long.parseLong(authentication.getName());
 
-            ProcurementResponse response = procurementService.createProcurement(request, userId);
+            // Get user role
+            String role = authentication.getAuthorities()
+                    .stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .findFirst()
+                    .orElse("");
+
+            ProcurementResponse response =
+                    procurementService.createProcurement(request, userId, role);
 
             log.info("Procurement created successfully: {}", response.getReferenceNumber());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
