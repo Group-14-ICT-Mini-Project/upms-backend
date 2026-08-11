@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class ProcurementService {
+    private static final BigDecimal FACULTY_BURSAR_APPROVAL_LIMIT = new BigDecimal("500000");
 
     @Autowired
     ProcurementRepository procurementRepository;
@@ -152,6 +153,7 @@ public class ProcurementService {
 
         Procurement procurement = procurementRepository.findById(procurementId)
                 .orElseThrow(() -> new RuntimeException("Procurement not found"));
+        ProcurementStatus requestedStatus = request.getStatus() == null ? null : resolveStatus(request.getStatus());
 
         boolean hasDetailUpdates = request.getTitle() != null
                 || request.getDescription() != null
@@ -184,7 +186,14 @@ public class ProcurementService {
         //if (request.getRequisitionType() != null) procurement.setRequisitionType(request.getRequisitionType());
         if (request.getCurrentStockBalance() != null) procurement.setCurrentStockBalance(request.getCurrentStockBalance());
         //if (request.getFundingSource() != null) procurement.setFundingSource(request.getFundingSource());
-        if (request.getStatus() != null) procurement.setStatus(resolveStatus(request.getStatus()));
+        if (isFacultyBursar(role)
+                && isFundDecisionStatus(requestedStatus)
+                && procurement.getEstimatedValue() != null
+                && procurement.getEstimatedValue().compareTo(FACULTY_BURSAR_APPROVAL_LIMIT) > 0) {
+            throw new RuntimeException("Faculty Bursar cannot approve or reject procurements over LKR 500,000. Main Bursar approval is required.");
+        }
+
+        if (requestedStatus != null) procurement.setStatus(requestedStatus);
         // Only non-HOD users can update these fields
         if (!"HOD".equalsIgnoreCase(role) &&
                 !"ROLE_HOD".equalsIgnoreCase(role)) {
@@ -218,6 +227,18 @@ public class ProcurementService {
         log.info("Procurement updated successfully");
 
         return mapToProcurementResponse(updated);
+    }
+
+    private boolean isFacultyBursar(String role) {
+        return "FBUR".equalsIgnoreCase(role)
+                || "ROLE_FBUR".equalsIgnoreCase(role)
+                || "FACULTY_BURSAR".equalsIgnoreCase(role)
+                || "ROLE_FACULTY_BURSAR".equalsIgnoreCase(role);
+    }
+
+    private boolean isFundDecisionStatus(ProcurementStatus status) {
+        return ProcurementStatus.FUNDS_VERIFIED.equals(status)
+                || ProcurementStatus.REJECTED.equals(status);
     }
 
     public ProcurementStatus resolveStatus(String status) {
